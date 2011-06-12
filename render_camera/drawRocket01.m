@@ -28,8 +28,8 @@ function [ rocket ] = drawRocket01( rocket )
    % step 1, create the plane face
    facerange  = linspace(-1,1,Npts);
    [x y] = meshgrid(facerange, 1.5*facerange);
-   x = .1*x;
-   y =.1*y;
+   x = -.1*x;
+   y = -.1*y;
     onez  = 0.1 * ones(1,Npts^2);
    face1 = [  x(:)';     y(:)';     -onez*1.0;          ones(1,Npts^2) ];
    face2 = [ -x(:)';     y(:)';      onez*1.0;          ones(1,Npts^2) ];
@@ -81,10 +81,10 @@ function [ rocket ] = drawRocket01( rocket )
       
       if(  loadTextures )
         fprintf('...loading textures ...\n ' );
-        tex_back  = imresize( double( ( imread_float('ss20a.png')))  , Msz,'bilinear'); 
-        tex_front = imresize( double( ( imread_float('ss20a.png'))) , Msz,'bilinear'); 
-        tex_side  = imresize( double( ( imread_float('ss20a.png')))  , Msz,'bilinear'); 
-        tex_top   = imresize( double( ( imread_float('ss20b.png')))   , Msz,'bilinear');       
+        tex_back  = imresize( double( ( imread_float('flare.jpg')))  , Msz,'bilinear'); 
+        tex_front = imresize( double( ( imread_float('flare.jpg'))) , Msz,'bilinear'); 
+        tex_side  = imresize( double( ( imread_float('flare.jpg')))  , Msz,'bilinear'); 
+        tex_top   = imresize( double( ( imread_float('flare.jpg')))   , Msz,'bilinear');       
         rocket.textures  = {tex_back, tex_front, tex_top, tex_top, tex_side, tex_side};
       
         colorsR  = zeros( numel(rocket.textures), Mlen )';

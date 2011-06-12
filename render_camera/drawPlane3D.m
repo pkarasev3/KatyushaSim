@@ -41,7 +41,7 @@ function [ rocket ] = drawPlane3D( rocket )
 
    
    % Floor is stationary
-   floor_xyz1 = [floorx(:)' ; floorz(:)' ; floory(:)' ; 1+0*floorz(:)' ];
+   floor_xyz1 = [-floorx(:)' ; -floorz(:)' ; floory(:)' ; 1+0*floorz(:)' ];
    floor_xyz2 = floor_xyz1 .* (1.0 + randn( size(floor_xyz1) )*5e-2 );
    floor_xyz3 = floor_xyz1 .* (1.0 + randn( size(floor_xyz1) )*5e-2 );
    
