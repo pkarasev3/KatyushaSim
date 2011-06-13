@@ -99,9 +99,10 @@ plane_1.gSE3  = gCam;
  end
  drawnow;
 
- img_smooth = imfilter( rgb2gray(img_out), fspecial('gaussian',[11 11],3.0),'replicate');
-  [x y]     = find( max( img_smooth(:) ) == img_smooth );
-  x = x(1); y = y(1);
+ 
+  [data_out,COUNT,MSG] = fread(obj,4);
+  x = double(data_out(1) + 256*data_out(2) ); 
+  y = double(data_out(3) + 256*data_out(4) );
   fprintf('x,y point: %f, %f \n',x,y);
   % Gains
       Kx             = 5;
