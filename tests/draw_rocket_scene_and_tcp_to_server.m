@@ -8,15 +8,16 @@ addpath('../matlab_utils/');
 addpath('./input');
 
 lookAt = [0,0,0];
-[gCam]= ( [eye(3,3) ,[ 3;-10;-40 ]; [ 0 0 0 1]] * ... 
+[gCam]= ( [eye(3,3) ,[ 3;-10;-50 ]; [ 0 0 0 1]] * ... 
               [ expm( skewsym([ .1 .1 .1]) ) ,[0 0 0]' ; [ 0 0 0 1]]) ^(-1);
-Nimgs = 200;
+Nimgs = 400;
 gObj    = eye(4,4);
+gObj(1,4) = 5;
 
 % img params
  clear vrcl*;
  clear rockat*;
- vrcl.Npts  = 80;
+ vrcl.Npts  = 160;
  vrcl.NxAA  = 1.5;
  vrcl.imgH  = 480;
  vrcl.imgW  = 640;
@@ -25,7 +26,7 @@ gObj    = eye(4,4);
  vrcl.gSE3  = gCam;
  vrcl.img   = zeros(vrcl.imgH,vrcl.imgW,3);
  vrcl.floorz= 0.0;
- vrcl.fscale= 20.0;
+ vrcl.fscale= 30.0;
  vrcl.floor_img = imresize(imread_float('map01small.jpg'),1.0);
   
 % multiple targets: different gObj and possibly drawing functions!
@@ -33,10 +34,12 @@ rocket_1 = vrcl;
 rocket_2 = vrcl;
 rocket_3 = vrcl;
 plane_1  = vrcl;
+stars_1  = vrcl;
 rocket_1.gObj = gObj;
 rocket_2.gObj = gObj;
 rocket_3.gObj = gObj;
 plane_1.gObj  = gObj;
+stars_1.gObj  = gObj;
 
 if( exist('obj','var') )
   fclose(obj);
@@ -48,10 +51,14 @@ fopen(obj);
 
 img_out = zeros(vrcl.imgH,vrcl.imgW,3);
 
+gCamAll = cell(1,Nimgs);
+gObjAll = cell(1,Nimgs);
+xyAll   = cell(1,Nimgs);
+
 for k = 1:Nimgs
     
- eta1   = [0; -1; 0];
- omega1 = [-0.05; 0.02; 0.02];
+ eta1   = [0; -1; 0]*0.5;
+ omega1 = [0.01*sin(7*pi*k/Nimgs)+.02; 0.01*sin(5*pi*k/Nimgs)+0.02; 0.03];
  eta2   = [0.05; -1.1; 0];
  omega2 = [-0.04; 0.03; -0.01];
  eta3   = [0.0; -1.4; 0.01];
@@ -64,19 +71,22 @@ rocket_2.gObj   = expm( [ [ skewsym(omega2) ,eta2 ]; ...
                                   [ 0 0 0 0]]* .25 ) *rocket_2.gObj;                                
 rocket_3.gObj  = expm( [ [ skewsym(omega3) ,eta3 ]; ... 
                                   [ 0 0 0 0]]* .25 ) * rocket_3.gObj;                                
- 
-% get projected and colored points for each object
-rocket_1  = drawRocket01( rocket_1 ); 
-plane_1   = drawPlane3D( plane_1 );
 
 rocket_1.gSE3 = gCam;
 plane_1.gSE3  = gCam;
+stars_1.gSE3  = gCam;
+                                
+gObjAll{k}     = rocket_1.gObj;
+gCamAll{k}     = gCam;
+                                
+% get projected and colored points for each object
+rocket_1  = drawRocket01( rocket_1 ); 
+plane_1   = drawPlane3D( plane_1 );
+stars_1   = drawStars3D( stars_1 );
 
  % send all objects to varyadic function to get image 
- vrcl      = drawMultiObject(vrcl,rocket_1,plane_1);
+ vrcl      = drawMultiObject(vrcl,rocket_1,plane_1,stars_1);
 
- img_out   = img_out * 0.5 + (vrcl.img + (0.001 + rand(size(vrcl.img))*0.01 ) ./ (0.1 + vrcl.img ) )*0.5;
- 
  sfigure(1); imshow(vrcl.img);  title( num2str_fixed_width(k) );
  print_mbytes( vrcl ); 
  
@@ -92,7 +102,7 @@ plane_1.gSE3  = gCam;
  raw_data = ['0123456789ABCD'  raw_rgb'];
  fwrite(obj,raw_data);
  
- writeImages = false; % save images to disk?
+ writeImages = true; % save images to disk?
  if( writeImages )
   imwrite( uint16( (2^16 - 1)*vrcl.img ), ...
                         ['./output/rocket_simdemo_' num2str_fixed_width(k) '.png'] );
@@ -105,8 +115,8 @@ plane_1.gSE3  = gCam;
   y = double(data_out(3) + 256*data_out(4) );
   fprintf('x,y point: %f, %f \n',x,y);
   % Gains
-      Kx             = 5;
-      Ky             = 5;
+      Kx             = 10;
+      Ky             = 10;
   % Shifted/Scaled Coordinates
       xW             = (x/vrcl.imgW)-0.5;
       yW             = 0.5 - (y/vrcl.imgH);
@@ -114,15 +124,19 @@ plane_1.gSE3  = gCam;
   w_control(1)   = -(  Ky * yW) ; % "tilt"
   w_control(2)   = -(  Kx * xW) ; % "pan"
   w_control(3)   = 0; % This might need to be non-zero for numerical reasons
-  v_control      = [0;0;-50];
+  v_control      = [0;0;-25];
   zeta_CC        = [skewsym(w_control), v_control ; zeros(1,4) ];
 
   % control: update the camera pose
   dT             = 1.0 / Nimgs;
   gCam           = expm( zeta_CC * dT ) * gCam; 
  disp( gCam );
- 
+  
+  xyAll{k} = [x;y];
  fprintf('');
 end
 
+save rocket_tcp_01 gObjAll gCamAll xyAll
+
  fclose(obj);
+ 

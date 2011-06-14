@@ -13,6 +13,8 @@ gObj    = eye(4,4);
 
 % img params
  clear vrcl; 
+ clear rocket*;
+ clear stars*;
  vrcl.Npts  = 160;
  vrcl.NxAA  = 2;
  vrcl.imgH  = 480;
@@ -25,7 +27,8 @@ gObj    = eye(4,4);
 % multiple targets: different gObj and possibly drawing functions!
 rocket_1 = vrcl;
 rocket_2 = vrcl;
-rocket_3   = vrcl;
+rocket_3 = vrcl;
+stars_1  = vrcl;
 rocket_1.gObj = gObj;
 rocket_2.gObj = gObj;
 rocket_3.gObj = gObj;
@@ -46,14 +49,16 @@ rocket_2.gObj   = expm( [ [ skewsym(omega2) ,eta2 ]; ...
                                   [ 0 0 0 0]]* .25 ) *rocket_2.gObj;                                
  rocket_3.gObj  = expm( [ [ skewsym(omega3) ,eta3 ]; ... 
                                   [ 0 0 0 0]]* .25 ) * rocket_3.gObj;                                
- 
+ stars_1.gObj   = eye(4,4);
+                                
 % get projected and colored points for each object
 rocket_2  = drawRocket02( rocket_2 ); 
 rocket_1  = drawRocket01( rocket_1 ); 
 rocket_3  = drawRocket01( rocket_3 );
- 
- % send all objects to varyadic function to get image 
- vrcl      = drawMultiObject(vrcl,rocket_1,rocket_2, rocket_3);
+stars_1   = drawStars3D( stars_1 );
+
+% send all objects to varyadic function to get image 
+ vrcl      = drawMultiObject(vrcl,rocket_1,rocket_2, rocket_3,stars_1);
  
  sfigure(1); imshow(vrcl.img);  title( num2str_fixed_width(k) );
  print_mbytes( vrcl ); 
