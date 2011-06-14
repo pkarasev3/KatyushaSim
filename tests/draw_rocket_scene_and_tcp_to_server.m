@@ -18,7 +18,7 @@ gObj(1,4) = 5;
  clear vrcl*;
  clear rockat*;
  vrcl.Npts  = 160;
- vrcl.NxAA  = 1.5;
+ vrcl.NxAA  = 2.0;
  vrcl.imgH  = 480;
  vrcl.imgW  = 640;
  vrcl.ptype = 'perspective';
@@ -26,8 +26,8 @@ gObj(1,4) = 5;
  vrcl.gSE3  = gCam;
  vrcl.img   = zeros(vrcl.imgH,vrcl.imgW,3);
  vrcl.floorz= 0.0;
- vrcl.fscale= 30.0;
- vrcl.floor_img = imresize(imread_float('map01small.jpg'),1.0);
+ vrcl.fscale= 35.0;
+ vrcl.floor_img = imresize(imread_float('map01small.jpg'),1.2);
   
 % multiple targets: different gObj and possibly drawing functions!
 rocket_1 = vrcl;
@@ -55,10 +55,13 @@ gCamAll = cell(1,Nimgs);
 gObjAll = cell(1,Nimgs);
 xyAll   = cell(1,Nimgs);
 
+xi = 0;
+yi = 0;
+
 for k = 1:Nimgs
     
- eta1   = [0; -1; 0]*0.5;
- omega1 = [0.01*sin(7*pi*k/Nimgs)+.02; 0.01*sin(5*pi*k/Nimgs)+0.02; 0.03];
+ eta1   = [0; -1; 0] * 0.75;
+ omega1 = [0.01*sin(7*pi*k/Nimgs)+.01; 0.01*sin(5*pi*k/Nimgs)+0.01; 0.005+0.01*sin(9*pi*k/Nimgs)];
  eta2   = [0.05; -1.1; 0];
  omega2 = [-0.04; 0.03; -0.01];
  eta3   = [0.0; -1.4; 0.01];
@@ -120,11 +123,13 @@ stars_1   = drawStars3D( stars_1 );
   % Shifted/Scaled Coordinates
       xW             = (x/vrcl.imgW)-0.5;
       yW             = 0.5 - (y/vrcl.imgH);
+      xi             = xi + 0.1*xW - 1e-2*xi^3;
+      yi             = yi + 0.1*yW - 1e-2*yi^3;
   w_control      = zeros(3,1);
-  w_control(1)   = -(  Ky * yW) ; % "tilt"
-  w_control(2)   = -(  Kx * xW) ; % "pan"
+  w_control(1)   = -(  Ky * (yW+0.2*yi) ) ; % "tilt"
+  w_control(2)   = -(  Kx * (xW+0.2*xi) ) ; % "pan"
   w_control(3)   = 0; % This might need to be non-zero for numerical reasons
-  v_control      = [0;0;-25];
+  v_control      = [0;0;-70];
   zeta_CC        = [skewsym(w_control), v_control ; zeros(1,4) ];
 
   % control: update the camera pose

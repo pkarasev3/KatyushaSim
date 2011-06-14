@@ -40,8 +40,8 @@ function [ rocket ] = drawRocket01( rocket )
       
    faces0 = [face1 face2 face3 face4 face5 face6];
    faces0      = faces0 .* (1.0 + randn(size(faces0))*0.01 );
-   rface = sqrt( 7*faces0(1,:).^2+7*faces0(3,:).^2 );
-   faces0(2,:) = faces0(2,:) * 7.0; 
+   rface = sqrt( 9*faces0(1,:).^2+9*faces0(3,:).^2 );
+   faces0(2,:) = faces0(2,:) * 5.0; 
    faces0(1,:) = faces0(1,:) ./ rface;
    faces0(3,:) = faces0(3,:) ./ rface;
    
@@ -136,8 +136,13 @@ function [ rocket ] = drawRocket01( rocket )
      rocket.R     = [plumeRGB{1}(pzorder)';  rocket.colors{1}(zorder)'];
      rocket.G     = [plumeRGB{2}(pzorder)';  rocket.colors{2}(zorder)'];
      rocket.B     = [plumeRGB{3}(pzorder)';  rocket.colors{3}(zorder)'];
-     rocket.A     = [ 0.2 * ones(numel(pzorder),1) ; 0.7 * ones(numel(zorder),1) ];
-     rocket.kerSz = [ 0 * ones(numel(pzorder),1)   ; 0 * ones(numel(zorder),1) ];
+     rocket.A     = [ 0.1 * ones(numel(pzorder),1) ; 0.7 * ones(numel(zorder),1) ];
+     
+     plume_ker          = 0 * ones(numel(pzorder),1);
+     plume_ker(1:1000:end) = 1;
+     body_ker = 0 * ones(numel(zorder),1);
+     body_ker(1:100:end) = 1;
+     rocket.kerSz = [ plume_ker   ; body_ker ];
      rocket.zvals = [ pzvals(pzorder)' ; zvals(zorder)' ];
      rocket.u     = [ pu(pzorder)' ;  u(zorder)' ];
      rocket.v     = [ pv(pzorder)' ;  v(zorder)' ];
