@@ -101,7 +101,7 @@ stars_1   = drawStars3D( stars_1 );
 
  % send all objects to varyadic function to get image 
  vrcl      = drawMultiObject(vrcl,rocket_1,rocket_2,rocket_3,plane_1,stars_1);
- vrcl.img  = vrcl.img .*(1 + 1e-1 * randn(size(vrcl.img))) + 1e-2 * randn(size(vrcl.img)) ./ (1e-1 + vrcl.img);
+ vrcl.img  = vrcl.img .*(1 + 1.5e-1 * randn(size(vrcl.img))) + 1e-2 * randn(size(vrcl.img)) ./ (1e-1 + vrcl.img);
  vrcl.img( vrcl.img > 1 ) = 1;
  vrcl.img( vrcl.img < 0 ) = 0;
  sfigure(1); imshow(vrcl.img);  title( num2str_fixed_width(k) );
