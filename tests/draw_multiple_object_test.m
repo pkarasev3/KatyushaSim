@@ -63,7 +63,7 @@ stars_1   = drawStars3D( stars_1 );
  sfigure(1); imshow(vrcl.img);  title( num2str_fixed_width(k) );
  print_mbytes( vrcl ); 
  
- writeImages = true; % save images to disk?
+ writeImages = false; % save images to disk?
  if( writeImages )
   imwrite( uint16( (2^16 - 1)*vrcl.img ), ...
                         ['./output/rocket_simdemo_' num2str_fixed_width(k) '.png'] );

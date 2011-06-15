@@ -40,7 +40,7 @@ function [ rocket ] = drawRocket01( rocket )
       
    faces0 = [face1 face2 face3 face4 face5 face6];
    faces0      = faces0 .* (1.0 + randn(size(faces0))*0.01 );
-   rface = sqrt( 9*faces0(1,:).^2+9*faces0(3,:).^2 );
+   rface = sqrt( 9*faces0(1,:).^2+9*faces0(3,:).^2 + 0.05);
    faces0(2,:) = faces0(2,:) * 5.0; 
    faces0(1,:) = faces0(1,:) ./ rface;
    faces0(3,:) = faces0(3,:) ./ rface;
@@ -55,7 +55,7 @@ function [ rocket ] = drawRocket01( rocket )
       
    
    f = f_in * NxAA; % Must scale f if rendering larger size!
-   z_ = 0.01;       % prevent extremely rapid 1/z effect 
+   z_ = 0.00;       % prevent extremely rapid 1/z effect 
    if( strcmp(ptype,'perspective' ) )
         u = imgW/2 + f * gfaces(1,:) ./ (z_ + gfaces(3,:) );
         v = imgH/2 + f * gfaces(2,:) ./ (z_ + gfaces(3,:) );
@@ -114,8 +114,9 @@ function [ rocket ] = drawRocket01( rocket )
      plen       = 20; % plume length
      plume_span = 1 + plen ./ ( 1 + plen * logspace(-1.5,0,rocket.Npts^2) );
      pfile      = sqrt( .5 * exp( -(plume_span - 1*plen/2).^2 / (plen) ) );
-     plume_xyz  = gSE3 * gObj * [ (randn(1,Npts^2)).*(pfile); ... 
+     plume_xyz0 = gObj * [ (randn(1,Npts^2)).*(pfile); ... 
                       plume_span; (randn(1,Npts^2)).*(pfile); 1+0*plume_span ];
+     plume_xyz  = gSE3 * plume_xyz0;
      pu         = imgW/2 + f * plume_xyz(1,:) ./ (z_ + plume_xyz(3,:) );
      pv         = imgH/2 + f * plume_xyz(2,:) ./ (z_ + plume_xyz(3,:) );
      [pzvals pzorder] = sort( plume_xyz(3,:),'descend');
@@ -125,6 +126,7 @@ function [ rocket ] = drawRocket01( rocket )
      plumeRGB{3}= sqrt((plume_span - 2*plen/3).^2)  * 90;
      for k = 1:3
        plumeRGB{k} = plumeRGB{k} / 300.0;
+       plumeRGB{k}(plume_xyz0(2,:) > 0 ) = 0;
      end
      
      bPlotDebug = false;

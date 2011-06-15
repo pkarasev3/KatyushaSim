@@ -36,8 +36,8 @@ function [ rocket ] = drawPlane3D( rocket )
    fl_h             = linspace( -1, 1, floor_sz(1) );
    fl_w             = floor_sz(2)/floor_sz(1) * linspace( -1, 1, floor_sz(2) );
    [floorx floory]  = meshgrid( fscale * fl_w, fscale * fl_h );
-   
-   floorz           = floorz + 0*floorx;
+  
+   floorz           = floorz + 0*floorx + (1.5*tex_floor(:,:,2)).^2  + (1.5*tex_floor(:,:,1)-1).^2;
 
    
    % Floor is stationary
@@ -70,6 +70,8 @@ function [ rocket ] = drawPlane3D( rocket )
     floor_r  = tex_floor(:,:,1);
     floor_g  = tex_floor(:,:,2);
     floor_b  = tex_floor(:,:,3);
+    
+   
 
     rocket.colors{1}  = repmat([  floor_r(:)' ],1,3);
     rocket.colors{2}  = repmat([  floor_g(:)' ],1,3);
@@ -92,8 +94,13 @@ function [ rocket ] = drawPlane3D( rocket )
      rocket.R     = [rocket.colors{1}(zorder)'];
      rocket.G     = [rocket.colors{2}(zorder)'];
      rocket.B     = [rocket.colors{3}(zorder)'];
-     rocket.A     = [ 0.3 * ones(numel(zorder),1) ];
-     rocket.kerSz = [ 0 * ones(numel(zorder),1)  ];
+     
+     plane_a              = 0.4 * ones(numel(zorder),1);
+     plane_a( 1:103:end ) = 0.05;
+     rocket.A             = [ plane_a ];
+     
+     plane_ker    = 0 * ones(numel(zorder),1);
+     rocket.kerSz = [ plane_ker  ];
      rocket.zvals = [ zvals(zorder) ];
      rocket.u     = [ u(zorder) ];
      rocket.v     = [ v(zorder) ];

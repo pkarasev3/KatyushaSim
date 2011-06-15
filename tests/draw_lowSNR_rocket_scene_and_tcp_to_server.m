@@ -10,14 +10,14 @@ addpath('./input');
 lookAt = [0,0,0];
 [gCam]= ( [eye(3,3) ,[ 3;-10;-50 ]; [ 0 0 0 1]] * ... 
               [ expm( skewsym([ .1 .1 .1]) ) ,[0 0 0]' ; [ 0 0 0 1]]) ^(-1);
-Nimgs = 400;
+Nimgs = 800;
 gObj    = eye(4,4);
 gObj(1,4) = 5;
 
 % img params
  clear vrcl*;
  clear rockat*;
- vrcl.Npts  = 200;
+ vrcl.Npts  = 160;
  vrcl.NxAA  = 2.0;
  vrcl.imgH  = 480;
  vrcl.imgW  = 640;
@@ -57,10 +57,11 @@ xyAll   = cell(1,Nimgs);
 
 xi = 0;
 yi = 0;
+dT = 1/400;
 
 for k = 1:Nimgs
     
- eta1   = [0; -1; 0] * 0.6;
+ eta1   = [0; -1; 0] * 1.0;
  omega1 = [0.01*sin(7*pi*k/Nimgs)+.01; 0.01*sin(5*pi*k/Nimgs)+0.01; 0.01+0.01*sin(9*pi*k/Nimgs)];
  eta2   = [0.05; -1.1; 0];
  omega2 = [-0.04; 0.03; -0.01];
@@ -83,13 +84,15 @@ gObjAll{k}     = rocket_1.gObj;
 gCamAll{k}     = gCam;
                                 
 % get projected and colored points for each object
-rocket_1  = drawRocket01( rocket_1 ); 
+rocket_1  = drawRocket02( rocket_1 ); 
 plane_1   = drawPlane3D( plane_1 );
 stars_1   = drawStars3D( stars_1 );
 
  % send all objects to varyadic function to get image 
  vrcl      = drawMultiObject(vrcl,rocket_1,plane_1,stars_1);
-
+ vrcl.img  = vrcl.img .*(1 + 1e-1 * randn(size(vrcl.img))) + 1e-2 * randn(size(vrcl.img)) ./ (1e-1 + vrcl.img);
+ vrcl.img( vrcl.img > 1 ) = 1;
+ vrcl.img( vrcl.img < 0 ) = 0;
  sfigure(1); imshow(vrcl.img);  title( num2str_fixed_width(k) );
  print_mbytes( vrcl ); 
  
@@ -109,6 +112,8 @@ stars_1   = drawStars3D( stars_1 );
  if( writeImages )
   imwrite( uint16( (2^16 - 1)*vrcl.img ), ...
                         ['./output/rocket_simdemo_' num2str_fixed_width(k) '.png'] );
+  imwrite( uint8( (2^8 - 1)*vrcl.img ), ...
+                        ['./output/rocket_simdemo_' num2str_fixed_width(k) '.jpg'] )                      
  end
  drawnow;
 
@@ -129,11 +134,11 @@ stars_1   = drawStars3D( stars_1 );
   w_control(1)   = -(  Ky * (yW+0.5*yi) ) ; % "tilt"
   w_control(2)   = -(  Kx * (xW+0.5*xi) ) ; % "pan"
   w_control(3)   = 0; % This might need to be non-zero for numerical reasons
-  v_control      = [0;0;-60];
+  v_control      = [0;0;-30];
   zeta_CC        = [skewsym(w_control), v_control ; zeros(1,4) ];
 
   % control: update the camera pose
-  dT             = 1.0 / Nimgs;
+ 
   gCam           = expm( zeta_CC * dT ) * gCam; 
  disp( gCam );
   

@@ -39,8 +39,9 @@ function [ rocket ] = drawRocket02( rocket )
    face6 = [  y(:)';   onez*1.5;      -1.0*x(:)';    ones(1,Npts^2) ];    
       
    faces0 = [face1 face2 face3 face4 face5 face6];
-   rface = sqrt( 5*faces0(1,:).^2+5*faces0(3,:).^2 );
-   faces0(2,:) = faces0(2,:) * 10.0; 
+   faces0 = faces0 .* (1 + 0.00*randn(size(faces0)));
+   rface = sqrt( 5*faces0(1,:).^2+5*faces0(3,:).^2 + 0.05);
+   faces0(2,:) = faces0(2,:) * 7.0; 
    faces0(1,:) = faces0(1,:) ./ rface;
    faces0(3,:) = faces0(3,:) ./ rface;
       
@@ -53,7 +54,7 @@ function [ rocket ] = drawRocket02( rocket )
       
    
    f = f_in * NxAA; % Must scale f if rendering larger size!
-   z_ = 0.01;       % prevent extremely rapid 1/z effect 
+   z_ = 0.00;       % prevent extremely rapid 1/z effect 
    if( strcmp(ptype,'perspective' ) )
         u = imgW/2 + f * gfaces(1,:) ./ (z_ + gfaces(3,:) );
         v = imgH/2 + f * gfaces(2,:) ./ (z_ + gfaces(3,:) );
@@ -80,12 +81,15 @@ function [ rocket ] = drawRocket02( rocket )
       end 
       
       if(  loadTextures )
-        fprintf('...loading textures ...\n ' );
-        tex_back  = imresize( double( ( imread_float('flare.jpg')))  , Msz,'bilinear'); 
-        tex_front = imresize( double( ( imread_float('flare.jpg'))) , Msz,'bilinear'); 
-        tex_side  = imresize( double( ( imread_float('flare.jpg')))  , Msz,'bilinear'); 
-        tex_top   = imresize( double( ( imread_float('flare.jpg')))   , Msz,'bilinear');  
+         fprintf('...loading textures ...\n ' );
+        body_img     = imread_float('flare.jpg');
+        body_img(:)  = (0.2+histeq(body_img(:))).^2;
+        tex_back  = imresize( double( body_img )  , Msz,'bilinear'); 
+        tex_front = imresize( double( body_img ) , Msz,'bilinear'); 
+        tex_side  = imresize( double( body_img )  , Msz,'bilinear'); 
+        tex_top   = imresize( double( body_img )   , Msz,'bilinear');       
         rocket.textures  = {tex_back, tex_front, tex_top, tex_top, tex_side, tex_side};
+      
       
         colorsR  = zeros( numel(rocket.textures), Mlen )';
         colorsG  = zeros( numel(rocket.textures), Mlen )';
@@ -105,19 +109,21 @@ function [ rocket ] = drawRocket02( rocket )
      
      % step 5. make a plume     
      plen       = 20; % plume length
-     plume_span = 1 + plen ./ ( 1 + plen * logspace(-1.5,0,rocket.Npts^2) );
+     plume_span = 0.5 + plen ./ ( 1 + plen * logspace(-1.5,0,rocket.Npts^2) );
      pfile      = sqrt( .5 * exp( -(plume_span - 1*plen/2).^2 / (plen) ) );
-     plume_xyz  = gSE3 * gObj * [ (randn(1,Npts^2)).*(pfile); ... 
+     plume_xyz0 = gObj * [ (randn(1,Npts^2)).*(pfile); ... 
                       plume_span; (randn(1,Npts^2)).*(pfile); 1+0*plume_span ];
+     plume_xyz  = gSE3 * plume_xyz0;
      pu         = imgW/2 + f * plume_xyz(1,:) ./ (z_ + plume_xyz(3,:) );
      pv         = imgH/2 + f * plume_xyz(2,:) ./ (z_ + plume_xyz(3,:) );
      [pzvals pzorder] = sort( plume_xyz(3,:),'descend');
      plumeRGB   = {[],[],[]};
-     plumeRGB{1}= ((plume_span - 3*plen/4).^2) / plen * 50; 
-     plumeRGB{2}= sqrt((plume_span - plen/2).^2)      * 70;
-     plumeRGB{3}= sqrt((plume_span - 2*plen/3).^2)    * 90;
+     plumeRGB{1}= ((plume_span - plen/2).^2) / plen * 110;
+     plumeRGB{2}= sqrt((plume_span - 3*plen/4).^2)  * 70;
+     plumeRGB{3}= sqrt((plume_span - 2*plen/3).^2)  * 90;
      for k = 1:3
        plumeRGB{k} = plumeRGB{k} / 500.0;
+       plumeRGB{k}(plume_xyz0(2,:) > 0 ) = 0;
      end
      
      bPlotDebug = false;
@@ -129,12 +135,21 @@ function [ rocket ] = drawRocket02( rocket )
      rocket.R     = [plumeRGB{1}(pzorder)';  rocket.colors{1}(zorder)'];
      rocket.G     = [plumeRGB{2}(pzorder)';  rocket.colors{2}(zorder)'];
      rocket.B     = [plumeRGB{3}(pzorder)';  rocket.colors{3}(zorder)'];
-     rocket.A     = [ 0.1 * ones(numel(pzorder),1) ; 0.5 * ones(numel(zorder),1) ];
-     rocket.kerSz = [ 1 * ones(numel(pzorder),1)   ; 0 * ones(numel(zorder),1) ];
+     
+     plume_a      = 0.1 * ones(numel(pzorder),1);
+    
+     rocket.A     = [ plume_a ; 0.5 * ones(numel(zorder),1) ];
+     
+     plume_ker          = 0 * ones(numel(pzorder),1);
+     
+     body_ker = 0 * ones(numel(zorder),1);
+     body_ker(1:100:end) = 1;
+     rocket.kerSz = [ plume_ker   ; body_ker ];
      rocket.zvals = [ pzvals(pzorder)' ; zvals(zorder)' ];
      rocket.u     = [ pu(pzorder)' ;  u(zorder)' ];
      rocket.v     = [ pv(pzorder)' ;  v(zorder)' ];
-     rocket.gam   = [ 0.01 * ones(numel(pzorder),1) ; 0.01 * ones(numel(zorder),1) ];
+     rocket.gam   = [ 0.0 * ones(numel(pzorder),1) ; 0.0 * ones(numel(zorder),1) ];
+     
      fprintf('');
 
      return;

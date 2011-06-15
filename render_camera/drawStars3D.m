@@ -31,26 +31,39 @@ function [ rocket ] = drawStars3D( rocket )
      spc   = linspace(-pi,pi,Npts_);
      [sthe sphi] = meshgrid( spc, spc);
      srad  = 500 + 100*randn(size(sthe));
-     [starsx starsy starsz] = sph2cart(sthe,sphi,srad);
+     [starsx starsy starsz] = sph2cart(sthe,sphi,srad); %#ok<NASGU>
     
      starsx = repmat(starsx(:),Npts_,1);
-     starsx = starsx(:) .* (1 + .5*randn( numel(starsx(:)), 1) );
+     starsx = ( 2000 * rand( numel(starsx(:)), 1) - 1000 );
      starsy = repmat(starsy(:),Npts_,1);
-     starsy = -1-abs( starsy(:) .* (1 + .5*randn( numel(starsy(:)), 1) ) );
-     starsz = repmat(starsz(:),Npts_,1);
-     starsz = starsz(:) .* (1 +.5*randn( numel(starsz(:)), 1) );
+     starsy = -0.05 - abs( ( 2000 * rand( numel(starsy(:)), 1) ) );
+     starsz = ( 2000 * rand( numel(starsx(:)), 1) - 1000 );
+     
+     stardist = sqrt( starsz.^2 + starsy.^2 + starsx.^2 );
+     starsy   = starsy - 100 ./ (5 + stardist );
    
-     rocket.starsx = starsx;
-     rocket.starsy = starsy;
-     rocket.starsz = starsz;
-   else
-     starsx = rocket.starsx;
-     starsy = rocket.starsy;
-     starsz = rocket.starsz;
+     moon_pos  = [ randn(4,500) * 30 , randn(4,500) * 10 ];
+     moon_pos(1,1:end/2) = moon_pos(1,1:end/2) + 50;
+     moon_pos(2,1:end/2) = moon_pos(2,1:end/2) - 2000;
+     moon_pos(3,1:end/2) = moon_pos(3,1:end/2) + 100;
+     moon_pos(1,1+end/2:end) = moon_pos(1,1+end/2:end) + 300;
+     moon_pos(2,1+end/2:end) = moon_pos(2,1+end/2:end) - 1900;
+     moon_pos(3,1+end/2:end) = moon_pos(3,1+end/2:end) - 100;
+     moon_pos(4,:) = moon_pos(3,:)*0 + 1;
+     
+     rocket.starsx = [starsx ; moon_pos(1,:)' ];
+     rocket.starsy = [starsy ; moon_pos(2,:)' ];
+     rocket.starsz = [starsz ; moon_pos(3,:)' ];
+     rocket.moon_pos = moon_pos;
+     
    end
-      
+   starsx = rocket.starsx;
+   starsy = rocket.starsy;
+   starsz = rocket.starsz;
+
    % stars is stationary
    faces0 = [starsx(:)' ; starsy(:)' ; starsz(:)' ; 1+0*starsz(:)' ];
+   faces0 = [faces0];
       
    % step 2. apply object's rigid transformation and projection
    rocket.faces = gObj * faces0;
@@ -71,9 +84,9 @@ function [ rocket ] = drawStars3D( rocket )
         v = imgH/2 + f * gfaces(2,:) / s;
    end
    
-    stars_r = (0.25 + 0.1 * rand(numel(starsx(:)),1)) * 50 + randn(1,1)*5;
-    stars_g = (0.25 + 0.1 * rand(numel(starsy(:)),1)) * 50 + randn(1,1)*5;
-    stars_b = (0.25 + 0.1 * rand(numel(starsz(:)),1)) * 50 + randn(1,1)*5;
+    stars_r = (0.3 + 0.1 * rand(numel(starsx(:)),1)) * 50 + randn(1,1)*2;
+    stars_g = (0.3 + 0.1 * rand(numel(starsy(:)),1)) * 50 + randn(1,1)*2;
+    stars_b = (0.3 + 0.1 * rand(numel(starsz(:)),1)) * 50 + randn(1,1)*2;
 
     rocket.colors{1}  = repmat([  stars_r(:)' ],1,1);
     rocket.colors{2}  = repmat([  stars_g(:)' ],1,1);
@@ -99,6 +112,7 @@ function [ rocket ] = drawStars3D( rocket )
      rocket.A     = [ 0.5 * ones(numel(zorder),1) ];
      rocket.kerSz = [ 0 * ones(numel(zorder),1)  ];
      rocket.kerSz(1:3:end) = 1;
+     rocket.kerSz(1:20:end) = 2;
      rocket.zvals = [ zvals(zorder) ];
      rocket.u     = [ u(zorder) ];
      rocket.v     = [ v(zorder) ];
