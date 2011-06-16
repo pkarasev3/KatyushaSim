@@ -41,10 +41,10 @@ stars_1.gObj  = gObj;
 gObj(1,4) = 5;
 rocket_1.gObj = gObj;
 
-gObj(1,4) = 10; gObj(3,4) = -10;
+gObj(1,4) = -10; gObj(3,4) = -15;
 rocket_2.gObj = gObj;
 
-gObj(1,4) = -10; gObj(3,4) = 10;
+gObj(1,4) = -10; gObj(3,4) = 15;
 rocket_3.gObj = gObj;
 
 if( exist('obj','var') )

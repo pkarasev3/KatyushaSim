@@ -84,9 +84,9 @@ function [ rocket ] = drawStars3D( rocket )
         v = imgH/2 + f * gfaces(2,:) / s;
    end
    
-    stars_r = (0.3 + 0.1 * rand(numel(starsx(:)),1)) * 50 + randn(1,1)*2;
-    stars_g = (0.3 + 0.1 * rand(numel(starsy(:)),1)) * 50 + randn(1,1)*2;
-    stars_b = (0.3 + 0.1 * rand(numel(starsz(:)),1)) * 50 + randn(1,1)*2;
+    stars_r = (0.3 + 0.1 * rand(numel(starsx(:)),1)) * 80 + randn(1,1)*2;
+    stars_g = (0.3 + 0.1 * rand(numel(starsy(:)),1)) * 80 + randn(1,1)*2;
+    stars_b = (0.3 + 0.1 * rand(numel(starsz(:)),1)) * 80 + randn(1,1)*2;
 
     rocket.colors{1}  = repmat([  stars_r(:)' ],1,1);
     rocket.colors{2}  = repmat([  stars_g(:)' ],1,1);
@@ -113,7 +113,7 @@ function [ rocket ] = drawStars3D( rocket )
      rocket.kerSz = [ 0 * ones(numel(zorder),1)  ];
      rocket.kerSz(1:3:end) = 1;
      rocket.kerSz(1:10:end) = 2;
-     rocket.kerSz(1:50:end) = 3;
+     rocket.kerSz(1:30:end) = 3;
      rocket.zvals = [ zvals(zorder) ];
      rocket.u     = [ u(zorder) ];
      rocket.v     = [ v(zorder) ];
